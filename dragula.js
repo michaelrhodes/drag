@@ -1,8 +1,6 @@
 'use strict';
 
 var emitter = require('contra/emitter');
-var crossvent = require('crossvent');
-var classes = require('./classes');
 var doc = document;
 var documentElement = doc.documentElement;
 
@@ -64,20 +62,19 @@ function dragula (initialContainers, options) {
   }
 
   function events (remove) {
-    var op = remove ? 'remove' : 'add';
+    var op = remove ? 'removeEventListener' : 'addEventListener';
     touchy(documentElement, op, 'mousedown', grab);
     touchy(documentElement, op, 'mouseup', release);
   }
 
   function eventualMovements (remove) {
-    var op = remove ? 'remove' : 'add';
+    var op = remove ? 'removeEventListener' : 'addEventListener';
     touchy(documentElement, op, 'mousemove', startBecauseMouseMoved);
   }
 
   function movements (remove) {
-    var op = remove ? 'remove' : 'add';
-    crossvent[op](documentElement, 'selectstart', preventGrabbed); // IE8
-    crossvent[op](documentElement, 'click', preventGrabbed);
+    var op = remove ? 'removeEventListener' : 'addEventListener';
+    documentElement[op]('click', preventGrabbed);
   }
 
   function destroy () {
@@ -146,7 +143,7 @@ function dragula (initialContainers, options) {
     _offsetX = getCoord('pageX', e) - offset.left;
     _offsetY = getCoord('pageY', e) - offset.top;
 
-    classes.add(_copy || _item, 'gu-transit');
+    (_copy || _item).classList.add('gu-transit');
     renderMirrorImage();
     drag(e);
   }
@@ -306,7 +303,7 @@ function dragula (initialContainers, options) {
     ungrab();
     removeMirrorImage();
     if (item) {
-      classes.rm(item, 'gu-transit');
+      item.classList.remove('gu-transit');
     }
     if (_renderTimer) {
       clearTimeout(_renderTimer);
@@ -412,11 +409,11 @@ function dragula (initialContainers, options) {
   }
 
   function spillOver (el) {
-    classes.rm(el, 'gu-hide');
+    el.classList.remove('gu-hide');
   }
 
   function spillOut (el) {
-    if (drake.dragging) { classes.add(el, 'gu-hide'); }
+    if (drake.dragging) { el.classList.add('gu-hide'); }
   }
 
   function renderMirrorImage () {
@@ -427,18 +424,18 @@ function dragula (initialContainers, options) {
     _mirror = _item.cloneNode(true);
     _mirror.style.width = getRectWidth(rect) + 'px';
     _mirror.style.height = getRectHeight(rect) + 'px';
-    classes.rm(_mirror, 'gu-transit');
-    classes.add(_mirror, 'gu-mirror');
+    _mirror.classList.remove('gu-transit');
+    _mirror.classList.add('gu-mirror');
     o.mirrorContainer.appendChild(_mirror);
-    touchy(documentElement, 'add', 'mousemove', drag);
-    classes.add(o.mirrorContainer, 'gu-unselectable');
+    touchy(documentElement, 'addEventListener', 'mousemove', drag);
+    o.mirrorContainer.classList.add('gu-unselectable');
     drake.emit('cloned', _mirror, _item, 'mirror');
   }
 
   function removeMirrorImage () {
     if (_mirror) {
-      classes.rm(o.mirrorContainer, 'gu-unselectable');
-      touchy(documentElement, 'remove', 'mousemove', drag);
+      o.mirrorContainer.classList.remove('gu-unselectable');
+      touchy(documentElement, 'removeEventListener', 'mousemove', drag);
       getParent(_mirror).removeChild(_mirror);
       _mirror = null;
     }
@@ -509,12 +506,12 @@ function touchy (el, op, type, fn) {
     mousemove: 'MSPointerMove'
   };
   if (global.navigator.pointerEnabled) {
-    crossvent[op](el, pointers[type], fn);
+    el[op](pointers[type], fn);
   } else if (global.navigator.msPointerEnabled) {
-    crossvent[op](el, microsoft[type], fn);
+    el[op](microsoft[type], fn);
   } else {
-    crossvent[op](el, touch[type], fn);
-    crossvent[op](el, type, fn);
+    el[op](touch[type], fn);
+    el[op](type, fn);
   }
 }
 
@@ -594,15 +591,7 @@ function getEventHost (e) {
 }
 
 function getCoord (coord, e) {
-  var host = getEventHost(e);
-  var missMap = {
-    pageX: 'clientX', // IE8
-    pageY: 'clientY' // IE8
-  };
-  if (coord in missMap && !(coord in host) && missMap[coord] in host) {
-    coord = missMap[coord];
-  }
-  return host[coord];
+  return getEventHost(e)[coord];
 }
 
 module.exports = dragula;
