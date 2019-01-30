@@ -29,7 +29,7 @@
   },
   "homepage": "https://github.com/bevacqua/dragula",
   "dependencies": {
-    "contra": "1.9.4"
+    "mittens": "1.1.0"
   },
   "devDependencies": {
     "bower": "1.5.2",

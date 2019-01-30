@@ -1,6 +1,6 @@
 'use strict';
 
-var emitter = require('contra/emitter');
+var emitter = require('mittens');
 var doc = document;
 var documentElement = doc.documentElement;
 
